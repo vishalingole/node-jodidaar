@@ -1,45 +1,51 @@
-const Sequelize = require("sequelize")
+const Sequelize = require("sequelize");
 
-module.exports = sequelize.define("user", {
-
+module.exports = sequelize.define(
+  "user",
+  {
     id: {
-        type: Sequelize.INTEGER(11),
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true
-
+      type: Sequelize.INTEGER(11),
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
     },
     email: {
-        unique: true,
-        type: Sequelize.STRING(50),
-        allowNull: false,
-        validate: {
-            // customValidator(value) {
-            //   if (value.length !== 10) {
-            //     throw new Error("Mobile number must be 10 digit.");
-            //   }
-            // }
-        }
+      unique: true,
+      type: Sequelize.STRING(50),
+      allowNull: false,
+      validate: {
+        // customValidator(value) {
+        //   if (value.length !== 10) {
+        //     throw new Error("Mobile number must be 10 digit.");
+        //   }
+        // }
+      },
     },
-    password: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        defaultValue: (Math.random() + 1).toString(36).substring(7)
+    mobile: {
+      unique: true,
+      type: Sequelize.STRING(20),
+      allowNull: false,
     },
-    uuid: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV1,
-        unique: true
+    isActive: {
+      type: Sequelize.ENUM("0", "1"), // 0 = Inactive and 1 = Active
+      allowNull: false,
+      defaultValue: "0",
     },
     createdAt: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW
+      type: Sequelize.DATE,
+      defaultValue: Sequelize.fn("now"),
     },
-
     updatedAt: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW
+      type: Sequelize.DATE,
+      defaultValue: Sequelize.fn("now"),
     },
-}, {
-    freezeTableName: true // Model tableName will be the same as the model name
-})
+    uuid: {
+      type: Sequelize.UUID,
+      defaultValue: Sequelize.UUIDV1,
+      unique: true,
+    },
+  },
+  {
+    freezeTableName: true, // Model tableName will be the same as the model name
+  }
+);
