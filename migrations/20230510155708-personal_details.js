@@ -43,7 +43,7 @@ module.exports = {
         allowNull: false,
         defaultValue: "0",
       },
-      physicalDisablitiesDetail: {
+      physicalDisablitiesDetails: {
         type: Sequelize.STRING(100), // 0 = Inactive and 1 = Active
         allowNull: true,
       },
@@ -92,11 +92,6 @@ module.exports = {
       updatedAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.fn("now"),
-      },
-      uuid: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV1,
-        unique: true,
       },
     });
   },
