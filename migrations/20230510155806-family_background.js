@@ -33,6 +33,14 @@ module.exports = {
         type: Sequelize.INTEGER(10),
         allowNull: true,
       },
+      unmarriedBrother: {
+        type: Sequelize.INTEGER(10),
+        allowNull: true,
+      },
+      unmarriedSister: {
+        type: Sequelize.INTEGER(10),
+        allowNull: true,
+      },
       sister: {
         type: Sequelize.ENUM("0", "1"), // 0 = No and 1 = Yes
         allowNull: true,

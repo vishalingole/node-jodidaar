@@ -30,7 +30,7 @@ module.exports = sequelize.define(
       allowNull: true,
     },
     income: {
-      type: Sequelize.INTEGER(20),
+      type: Sequelize.FLOAT,
       allowNull: true,
     },
     incomeType: {

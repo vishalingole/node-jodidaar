@@ -7,6 +7,11 @@ const refreshTokenSecret = process.env.JWT_KEY;
 const refreshTokens = [];
 const userModel = require("../src/models/User");
 const PersonalDetails = require("../src/models/PersonalDetails");
+const AddressModel = require("../src/models/Address");
+const EducationalDetailsModel = require("../src/models/EducationalProfessionalDetails");
+const FamilyBackgroundModel = require("../src/models/FamilyBackground");
+const HoroscopeDetailsModel = require("../src/models/HoroscopeDetails");
+const ExpectationsModel = require("../src/models/Expectations");
 
 registerController.post("/", async function (request, response) {
   console.log(request.body);
@@ -24,6 +29,16 @@ registerController.post("/", async function (request, response) {
       const refreshToken = jwt.sign({ username: mobile }, refreshTokenSecret, {
         expiresIn: "5h",
       });
+
+      AddressModel.create({ ...request.body, userId: data.id });
+      ExpectationsModel.create({ ...request.body, userId: data.id }).catch(
+        (e) => {
+          console.log(e.message);
+        }
+      );
+      FamilyBackgroundModel.create({ ...request.body, userId: data.id });
+      HoroscopeDetailsModel.create({ ...request.body, userId: data.id });
+      EducationalDetailsModel.create({ ...request.body, userId: data.id });
       PersonalDetails.create({ ...request.body, userId: data.id }).then(
         (data) => {
           refreshTokens.push(refreshToken);
