@@ -26,6 +26,10 @@ module.exports = {
         type: Sequelize.STRING(50),
         allowNull: false,
       },
+      displayId: {
+        type: Sequelize.STRING(100),
+        allowNull: false,
+      },
       subCaste: {
         type: Sequelize.STRING(50),
         allowNull: true,

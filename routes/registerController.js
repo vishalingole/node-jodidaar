@@ -12,6 +12,17 @@ const EducationalDetailsModel = require("../src/models/EducationalProfessionalDe
 const FamilyBackgroundModel = require("../src/models/FamilyBackground");
 const HoroscopeDetailsModel = require("../src/models/HoroscopeDetails");
 const ExpectationsModel = require("../src/models/Expectations");
+const transporter = require("../src/mailer");
+const logger = require("../src/logger");
+const handlebars = require("handlebars");
+
+let mailOptions = {
+  from: "apideveloper1991@gmail.com",
+  // to: "vishal.ingole3@gmail.com",
+  to: "vishal.ingole3@gmail.com",
+  subject: "New User Registered",
+  text: "Hey XYZ, New user register please check",
+};
 
 registerController.post("/", async function (request, response) {
   console.log(request.body);
@@ -39,17 +50,55 @@ registerController.post("/", async function (request, response) {
       FamilyBackgroundModel.create({ ...request.body, userId: data.id });
       HoroscopeDetailsModel.create({ ...request.body, userId: data.id });
       EducationalDetailsModel.create({ ...request.body, userId: data.id });
-      PersonalDetails.create({ ...request.body, userId: data.id }).then(
-        (data) => {
-          refreshTokens.push(refreshToken);
+      let displayId =
+        request.body.gender && request.body.gender == "Male"
+          ? `G${data.id}`
+          : `B${data.id}`;
+      PersonalDetails.create({
+        ...request.body,
+        userId: data.id,
+        displayId: displayId,
+      }).then((data) => {
+        refreshTokens.push(refreshToken);
+        // transporter.sendMail(mailOptions, function (error, info) {
+        //   if (error) {
+        //     console.log(error);
+        //   } else {
+        //     console.log("Email sent: " + info.response);
+        //   }
+        // });
 
-          response.json({
-            accessToken,
-            refreshToken,
-            id: data.uuid,
-          });
-        }
-      );
+        // logger.readHTMLFile(
+        //   "C:/Users/visha/Desktop/be-jodidaar/public/pages/emailWithPDF.html",
+        //   // "/var/www/node-tutorial/public/pages/emailWithPDF.html",
+        //   function (err, html) {
+        //     var template = handlebars.compile(html);
+        //     var replacements = {
+        //       name: "Vishal Ingole",
+        //       body: "Welcome to Jodidaar!",
+        //     };
+        //     var htmlToSend = template(replacements);
+        //     var mailOptions = {
+        //       from: "apideveloper1991@gmail.com",
+        //       to: "vishal.ingole3@gmail.com",
+        //       subject: "Welcome to JodiDaar!",
+        //       html: htmlToSend,
+        //     };
+        //     transporter.sendMail(mailOptions, function (error, response) {
+        //       if (error) {
+        //         console.log(error);
+        //         callback(error);
+        //       }
+        //     });
+        //   }
+        // );
+
+        response.json({
+          accessToken,
+          refreshToken,
+          id: data.uuid,
+        });
+      });
     })
     .catch((err) => {
       console.log(err.message);

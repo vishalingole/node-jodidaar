@@ -8,7 +8,7 @@ const logger = require("./src/logger");
 // const cronjob = require('./src/cronjob')
 
 const twilioApi = require("./src/twilio-api");
-// const transporter = require('./src/mailer')
+const transporter = require("./src/mailer");
 
 // twilioApi.data.sendSMS("+917796042050", "Server is up");
 
@@ -71,6 +71,7 @@ app.use("/api/product", require("./routes/productController"));
 app.use("/api/zoom", require("./routes/zoomController"));
 app.use("/api/zoom/webhook/webinar", require("./routes/webhookController"));
 app.use("/api/register", require("./routes/registerController"));
+app.use("/api/search", require("./routes/searchController"));
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, console.log(`server started on port ${PORT}`));

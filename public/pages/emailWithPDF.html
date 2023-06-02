@@ -1,11 +1,45 @@
-<div class="entry">
-    <h1>My New Post</h1>
-    <div class="body">
-      Hi {{name}},
-      {{body}}
-      <!-- <img src="https://image.shutterstock.com/image-photo/adult-child-hands-holding-water-600w-1653122137.jpg" alt="Italian Trulli"> -->
-      Thanks & Regards,
-      Vishal Ingole
-    </div>
-  </div>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Email Template</title>
+    <style>
+      header {
+        background-color: #000;
+        color: #fff;
+        padding: 20px;
+      }
 
+      h1 {
+        font-size: 20px;
+        margin-bottom: 0;
+      }
+
+      p {
+        margin-bottom: 10px;
+      }
+
+      main {
+        padding: 20px;
+      }
+
+      footer {
+        background-color: #fff;
+        color: #000;
+        padding: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Email Template</h1>
+      <p>This is an email template with header and footer.</p>
+    </header>
+    <main>
+      Hi {{name}},
+      <p>This is the main content of the email.</p>
+    </main>
+    <footer>
+      <p>This is the footer of the email.</p>
+    </footer>
+  </body>
+</html>
