@@ -15,6 +15,7 @@ const ExpectationsModel = require("../src/models/Expectations");
 const transporter = require("../src/mailer");
 const logger = require("../src/logger");
 const handlebars = require("handlebars");
+const twilioApi = require("../src/twilio-api");
 
 let mailOptions = {
   from: "apideveloper1991@gmail.com",
@@ -23,6 +24,53 @@ let mailOptions = {
   subject: "New User Registered",
   text: "Hey XYZ, New user register please check",
 };
+
+registerController.post("/step-one", async function (request, response) {
+  console.log(request.body);
+  const mobile = request.body.mobile;
+  twilioApi.data
+    .watsupMessage(
+      "whatsapp:",
+      "Welcome to JodiDaar . Please enter four digit code for authentication. 5487"
+    )
+    .then((data) => {
+      userModel
+        .create(request.body)
+        .then((data) => {
+          console.log("User Created");
+          const accessToken = jwt.sign(
+            { username: mobile },
+            accessTokenSecret,
+            {
+              expiresIn: "5h",
+            }
+          );
+          const refreshToken = jwt.sign(
+            { username: mobile },
+            refreshTokenSecret,
+            {
+              expiresIn: "5h",
+            }
+          );
+          refreshTokens.push(refreshToken);
+          response.json({
+            accessToken,
+            refreshToken,
+            id: data.uuid,
+          });
+        })
+        .catch((err) => {
+          console.log(err.message);
+          response.json(err);
+        });
+    })
+    .catch((error) => {
+      twilioApi.data.sendSMS(
+        // "+",
+        "Welcome to JodiDaar . Please enter four digit code for authentication. 5487"
+      );
+    });
+});
 
 registerController.post("/", async function (request, response) {
   console.log(request.body);

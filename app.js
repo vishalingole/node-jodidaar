@@ -10,7 +10,7 @@ const logger = require("./src/logger");
 const twilioApi = require("./src/twilio-api");
 const transporter = require("./src/mailer");
 
-// twilioApi.data.sendSMS("+917796042050", "Server is up");
+// twilioApi.data.sendSMS("+", "Server is up");
 
 const app = express();
 
