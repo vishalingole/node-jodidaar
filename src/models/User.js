@@ -14,17 +14,22 @@ module.exports = sequelize.define(
       type: Sequelize.STRING(50),
       allowNull: false,
       validate: {
-        // customValidator(value) {
-        //   if (value.length !== 10) {
-        //     throw new Error("Mobile number must be 10 digit.");
-        //   }
-        // }
+        isEmail: true,
       },
     },
     mobile: {
       unique: true,
-      type: Sequelize.STRING(20),
+      type: Sequelize.INTEGER(20),
       allowNull: false,
+      validate: {
+        checkLength(value) {
+          console.log(value);
+          console.log("+++", value.length);
+          if (value.length !== 10) {
+            throw new Error("Mobile number must be 10 digit.");
+          }
+        },
+      },
     },
     isActive: {
       type: Sequelize.ENUM("0", "1"), // 0 = Inactive and 1 = Active

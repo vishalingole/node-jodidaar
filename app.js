@@ -4,11 +4,11 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const cors = require("cors");
 const router = express.Router();
-const logger = require("./src/logger");
+// const logger = require("./src/logger");
 // const cronjob = require('./src/cronjob')
 
-const twilioApi = require("./src/twilio-api");
-const transporter = require("./src/mailer");
+// const twilioApi = require("./src/twilio-api");
+// const transporter = require("./src/mailer");
 
 // twilioApi.data.sendSMS("+", "Server is up");
 
@@ -66,10 +66,10 @@ require("./src/database/connection");
 require("./src/bootstrap")();
 
 app.use("/api/category", require("./routes/categoryController"));
-// app.use("/api/user", require("./routes/userController"));
+app.use("/api/user", require("./routes/userController"));
 app.use("/api/product", require("./routes/productController"));
-app.use("/api/zoom", require("./routes/zoomController"));
-app.use("/api/zoom/webhook/webinar", require("./routes/webhookController"));
+// app.use("/api/zoom", require("./routes/zoomController"));
+// app.use("/api/zoom/webhook/webinar", require("./routes/webhookController"));
 app.use("/api/register", require("./routes/registerController"));
 app.use("/api/search", require("./routes/searchController"));
 const PORT = process.env.PORT || 5000;
