@@ -71,7 +71,7 @@ module.exports = {
       },
       dob: {
         type: Sequelize.DATE,
-        allowNull: false,
+        allowNull: true,
       },
       maritialStatus: {
         type: Sequelize.STRING(20),

@@ -3,6 +3,7 @@ const serchController = express.Router();
 const authenticateJWT = require("../src/middleware/authenticateJWT");
 const jwt = require("jsonwebtoken");
 const PersonalDetails = require("../src/models/PersonalDetails");
+const Address = require("../src/models/Address");
 const accessTokenSecret = process.env.JWT_KEY;
 const refreshTokenSecret = process.env.JWT_KEY;
 const refreshTokens = [];
@@ -27,7 +28,7 @@ serchController.get("/", async function (request, response) {
       ...request.query,
     },
     order: [["id", "DESC"]],
-    attributes: { exclude: ["id", "userId", "firstName", "middleName"] },
+    attributes: { exclude: ["id", "firstName", "middleName"] },
     offset: page,
     limit: limit,
   })

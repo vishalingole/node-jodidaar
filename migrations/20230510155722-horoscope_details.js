@@ -47,9 +47,9 @@ module.exports = {
         allowNull: true,
       },
       mangal: {
-        type: Sequelize.ENUM("0", "1"), // 0 = Inactive and 1 = Active
+        type: Sequelize.ENUM("Yes", "No", "Saumya", "Nirdosh"), // 0 = Inactive and 1 = Active
         allowNull: false,
-        defaultValue: "0",
+        defaultValue: "No",
       },
       createdAt: {
         type: Sequelize.DATE,

@@ -72,6 +72,7 @@ app.use("/api/product", require("./routes/productController"));
 // app.use("/api/zoom/webhook/webinar", require("./routes/webhookController"));
 app.use("/api/register", require("./routes/registerController"));
 app.use("/api/search", require("./routes/searchController"));
+// app.use("/api/location", require("./routes/locationContoller"));
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, console.log(`server started on port ${PORT}`));

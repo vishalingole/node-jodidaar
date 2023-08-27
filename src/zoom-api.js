@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+pconst jwt = require('jsonwebtoken');
 var rp = require('request-promise');
 //Use the ApiKey and APISecret from config.js
 const payload = {

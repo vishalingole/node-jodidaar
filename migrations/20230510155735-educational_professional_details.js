@@ -26,7 +26,7 @@ module.exports = {
         type: Sequelize.STRING(50),
         allowNull: false,
       },
-      occupationDetails: {
+      occupationDetail: {
         type: Sequelize.TEXT,
         allowNull: true,
       },

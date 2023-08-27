@@ -16,6 +16,7 @@ const ExpectationsModel = require("../src/models/Expectations");
 const logger = require("../src/logger");
 const handlebars = require("handlebars");
 const twilioApi = require("../src/twilio-api");
+const upload = require("../src/upload");
 
 let mailOptions = {
   from: "apideveloper1991@gmail.com",
@@ -25,52 +26,153 @@ let mailOptions = {
   text: "Hey XYZ, New user register please check",
 };
 
-registerController.post("/step-one", async function (request, response) {
-  console.log(request.body);
-  const mobile = request.body.mobile;
-  twilioApi.data
-    .watsupMessage(
-      "whatsapp:",
-      "Welcome to JodiDaar . Please enter four digit code for authentication. 5487"
-    )
-    .then((data) => {
-      userModel
-        .create(request.body)
-        .then((data) => {
-          console.log("User Created");
-          const accessToken = jwt.sign(
-            { username: mobile },
-            accessTokenSecret,
-            {
-              expiresIn: "5h",
-            }
-          );
-          const refreshToken = jwt.sign(
-            { username: mobile },
-            refreshTokenSecret,
-            {
-              expiresIn: "5h",
-            }
-          );
-          refreshTokens.push(refreshToken);
+registerController.post(
+  "/user/personal-detail",
+  async function (request, response) {
+    console.log(request.body);
+    const mobile = request.body.mobile;
+
+    // twilioApi.data
+    //   .watsupMessage(
+    //     "whatsapp:",
+    //     "Welcome to JodiDaar . Please enter four digit code for authentication. 5487"
+    //   )
+    //   .then((data) => {
+
+    userModel
+      .create(request.body)
+      .then((data) => {
+        console.log("User Created");
+        let displayId =
+          request.body.gender && request.body.gender == "Male"
+            ? `G${data.id}`
+            : `B${data.id}`;
+        PersonalDetails.create({
+          ...request.body,
+          userId: data.id,
+          displayId: displayId,
+        }).then((data) => {
           response.json({
-            accessToken,
-            refreshToken,
-            id: data.uuid,
+            status: "SUCCESS",
+            message: "Personal Detail Added successfully.",
+            id: data.id,
           });
-        })
-        .catch((err) => {
-          console.log(err.message);
-          response.json(err);
         });
-    })
-    .catch((error) => {
-      twilioApi.data.sendSMS(
-        // "+",
-        "Welcome to JodiDaar . Please enter four digit code for authentication. 5487"
-      );
+      })
+      .catch((error) => response.json(error));
+
+    //     .catch((error) => {
+    //       twilioApi.data.sendSMS(
+    //         // "+",
+    //         "Welcome to JodiDaar . Please enter four digit code for authentication. 5487"
+    //       );
+    //     });
+  }
+);
+
+registerController.post(
+  "/profileimage",
+  upload.single("file"),
+  function (request, response) {
+    // const userId = request.body.id;
+    console.log(request.file);
+    // request.body.categoryImage = request.file.path;
+    console.log(request.body);
+    console.log(request.body.userId);
+  }
+);
+
+registerController.post(
+  "/user/education-detail",
+  async function (request, response) {
+    const userId = request.body.id;
+    EducationalDetailsModel.create({ ...request.body, userId: userId })
+      .then((data) =>
+        response.json({
+          statusCode: 200,
+          status: "success",
+          message: "Education information added successfully.",
+        })
+      )
+      .catch((err) => {
+        console.log(err.message);
+        response.json(err);
+      });
+  }
+);
+
+registerController.post(
+  "/user/family-background",
+  async function (request, response) {
+    const userId = request.body.id;
+    FamilyBackgroundModel.create({ ...request.body, userId: userId })
+      .then((data) =>
+        response.json({
+          statusCode: 200,
+          status: "success",
+          message: "Family information added successfully.",
+        })
+      )
+      .catch((err) => {
+        console.log(err.message);
+        response.json(err);
+      });
+  }
+);
+
+registerController.post("/user/address", async function (request, response) {
+  const userId = request.body.id;
+  AddressModel.create({ ...request.body, userId: userId })
+    .then((data) =>
+      response.json({
+        statusCode: 200,
+        status: "success",
+        message: "Address information added successfully.",
+      })
+    )
+    .catch((err) => {
+      console.log(err.message);
+      response.json(err);
     });
 });
+
+registerController.post(
+  "/user/horoscope-detail",
+  async function (request, response) {
+    const userId = request.body.id;
+    HoroscopeDetailsModel.create({ ...request.body, userId: userId })
+      .then((data) =>
+        response.json({
+          statusCode: 200,
+          status: "success",
+          message: "Horoscope information added successfully.",
+        })
+      )
+      .catch((err) => {
+        console.log(err.message);
+        response.json(err);
+      });
+  }
+);
+
+registerController.post(
+  "/user/expectations",
+  async function (request, response) {
+    const userId = request.body.id;
+    ExpectationsModel.create({ ...request.body, userId: userId })
+      .then((data) =>
+        response.json({
+          statusCode: 200,
+          status: "success",
+          message: "Expectation information added successfully.",
+        })
+      )
+      .catch((err) => {
+        console.log(err.message);
+        response.json(err);
+      });
+  }
+);
 
 registerController.post("/", async function (request, response) {
   console.log(request.body);

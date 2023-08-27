@@ -62,7 +62,7 @@ module.exports = {
         type: Sequelize.STRING(100),
         allowNull: true,
       },
-      relativesSurname: {
+      relativeSurname: {
         type: Sequelize.TEXT,
         allowNull: false,
       },
