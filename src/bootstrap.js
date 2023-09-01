@@ -4,6 +4,7 @@ const Expectations = require("./models/Expectations");
 const FamilyBackground = require("./models/FamilyBackground");
 const HoroscopeDetails = require("./models/HoroscopeDetails");
 const PersonalDetails = require("./models/PersonalDetails");
+const ProfileImage = require("./models/ProfileImage");
 const User = require("./models/User");
 
 module.exports = async () => {
@@ -36,4 +37,10 @@ module.exports = async () => {
     foreignKey: "userId",
   });
   HoroscopeDetails.belongsTo(User, { as: "User", foreignKey: "userId" });
+
+  User.hasMany(ProfileImage, {
+    as: "ProfileImage",
+    foreignKey: "userId",
+  });
+  ProfileImage.belongsTo(User, { as: "User", foreignKey: "userId" });
 };

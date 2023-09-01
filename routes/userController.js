@@ -18,6 +18,7 @@ const EducationalProfessionalDetails = require("../src/models/EducationalProfess
 const Expectations = require("../src/models/Expectations");
 const FamilyBackground = require("../src/models/FamilyBackground");
 const HoroscopeDetails = require("../src/models/HoroscopeDetails");
+const fs = require("fs");
 
 userController.get("/", async function (request, response) {});
 
@@ -203,6 +204,22 @@ userController.post("/stepOne", async function (request, response) {
       //   throw new Error(err.message);
       response.json(err);
     });
+});
+
+userController.get("/get-profile-image", async function (request, response) {
+  console.log(request.query.id);
+
+  const imagePath = "public/test.jpg";
+  const imageBuffer = fs.readFileSync(imagePath);
+  console.log(imageBuffer);
+  // Convert the image buffer to base64.
+  const base64Image = imageBuffer.toString("base64");
+
+  // Set the Content-Type header to the image type.
+  response.setHeader("Content-Type", "image/jpg");
+
+  // Send the base64 encoded image to the client.
+  response.send(base64Image);
 });
 
 // userController.post(

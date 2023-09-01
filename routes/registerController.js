@@ -17,6 +17,7 @@ const logger = require("../src/logger");
 const handlebars = require("handlebars");
 const twilioApi = require("../src/twilio-api");
 const upload = require("../src/upload");
+const ProfileImage = require("../src/models/ProfileImage");
 
 let mailOptions = {
   from: "apideveloper1991@gmail.com",
@@ -76,9 +77,13 @@ registerController.post(
   function (request, response) {
     // const userId = request.body.id;
     console.log(request.file);
-    // request.body.categoryImage = request.file.path;
+    request.body.fileName = request.file.path;
     console.log(request.body);
     console.log(request.body.userId);
+    ProfileImage.create({
+      userId: request.body.userId,
+      fileName: request.file.path,
+    });
   }
 );
 
