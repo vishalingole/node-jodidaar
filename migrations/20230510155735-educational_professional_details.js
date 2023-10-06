@@ -30,10 +30,10 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true,
       },
-      // occupationPlace: {
-      //   type: Sequelize.STRING(50),
-      //   allowNull: true,
-      // },
+      occupationPlace: {
+        type: Sequelize.STRING(50),
+        allowNull: true,
+      },
       income: {
         type: Sequelize.FLOAT,
         allowNull: true,

@@ -95,6 +95,8 @@ userController.post("/verify-otp", async function (request, response) {
 
 userController.get("/profile-detail", async function (request, response) {
   const profileId = request.query.profileId;
+  return userService.getProfile(profileId).then((data) => response.json(data));
+
   console.log(profileId);
   User.findByPk(profileId, {
     include: [
@@ -281,5 +283,20 @@ userController.get("/get-profile-image", async function (request, response) {
 // userController.get("/:id", authenticateJWT, async function (request, response) {
 //   response.send("get user by id");
 // });
+
+userController.get("/latest-profile", async function (request, response) {
+  userService.getLatestProfile().then((data) => response.json(data));
+});
+
+userController.get("/get-profile-detail", async function (request, response) {
+  console.log(request.query);
+
+  // userService
+  //   .sendProfileDetail(request.query)
+  //   .then((data) => response.json(data));
+  return userService
+    .sendProfileDetail(request.query)
+    .then((data) => response.json(data));
+});
 
 module.exports = userController;

@@ -23,7 +23,7 @@ var methods = {
           resolve(message);
         })
         .catch((err) => {
-          console.log(err);
+          console.log("Error Message", err);
           reject(err);
         });
     });

@@ -36,6 +36,11 @@ module.exports = sequelize.define(
       allowNull: false,
       defaultValue: "0",
     },
+    userType: {
+      type: Sequelize.ENUM("USER", "ADMIN", "OPERATOR"),
+      allowNull: false,
+      defaultValue: "USER",
+    },
     createdAt: {
       type: Sequelize.DATE,
       defaultValue: Sequelize.fn("now"),

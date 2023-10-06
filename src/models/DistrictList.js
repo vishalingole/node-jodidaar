@@ -1,7 +1,7 @@
 const Sequelize = require("sequelize");
 
 module.exports = sequelize.define(
-  "educational_professional_details",
+  "all_cities",
   {
     id: {
       type: Sequelize.INTEGER(11),
@@ -9,38 +9,20 @@ module.exports = sequelize.define(
       autoIncrement: true,
       primaryKey: true,
     },
-    userId: {
-      type: Sequelize.INTEGER(11),
-      allowNull: false,
-    },
-    educationArea: {
-      type: Sequelize.STRING(50),
-      allowNull: true,
-    },
-    education: {
-      type: Sequelize.STRING(50),
-      allowNull: true,
-    },
-    occupationType: {
+    city_name: {
+      unique: true,
       type: Sequelize.STRING(50),
       allowNull: false,
     },
-    occupationDetail: {
-      type: Sequelize.TEXT,
-      allowNull: true,
-    },
-    occupationPlace: {
+    city_code: {
+      unique: true,
       type: Sequelize.STRING(50),
-      allowNull: true,
-    },
-    income: {
-      type: Sequelize.FLOAT,
-      allowNull: true,
-    },
-    incomeType: {
-      type: Sequelize.ENUM("Monthly", "Annual"), // 0 = Inactive and 1 = Active
       allowNull: false,
-      defaultValue: "Annual",
+    },
+    state_code: {
+      unique: true,
+      type: Sequelize.STRING(50),
+      allowNull: false,
     },
     createdAt: {
       type: Sequelize.DATE,
