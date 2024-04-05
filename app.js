@@ -74,7 +74,9 @@ app.use("/api/register", require("./routes/registerController"));
 app.use("/api/search", require("./routes/searchController"));
 app.use("/api/location", require("./routes/locationContoller"));
 app.use("/api/visits", require("./routes/siteVisitsController"));
-
+app.use("/api/admin", require("./routes/adminController"));
+app.use("/api/bookmark", require("./routes/bookmarkController"));
+app.use("/api/advance-search", require("./routes/advanceSearchController"));
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, console.log(`server started on port ${PORT}`));

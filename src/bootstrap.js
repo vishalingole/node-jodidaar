@@ -3,9 +3,11 @@ const EducationalProfessionalDetails = require("./models/EducationalProfessional
 const Expectations = require("./models/Expectations");
 const FamilyBackground = require("./models/FamilyBackground");
 const HoroscopeDetails = require("./models/HoroscopeDetails");
+const OperatorInfo = require("./models/OperatorInfo");
 const PersonalDetails = require("./models/PersonalDetails");
 const ProfileImage = require("./models/ProfileImage");
 const User = require("./models/User");
+const Bookmark = require("./models/Bookmark");
 
 module.exports = async () => {
   User.hasOne(PersonalDetails, { as: "PersonalDetails", foreignKey: "userId" });
@@ -43,4 +45,13 @@ module.exports = async () => {
     foreignKey: "userId",
   });
   ProfileImage.belongsTo(User, { as: "User", foreignKey: "userId" });
+
+  User.hasOne(OperatorInfo, { as: "OperatorInfo", foreignKey: "userId" });
+  OperatorInfo.belongsTo(User, { as: "User", foreignKey: "userId" });
+
+  User.hasMany(Bookmark, {
+    as: "Bookmark",
+    foreignKey: "userId",
+  });
+  Bookmark.belongsTo(User, { as: "User", foreignKey: "userId" });
 };

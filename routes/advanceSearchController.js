@@ -1,5 +1,5 @@
 const express = require("express");
-const searchController = express.Router();
+const advanceSearchController = express.Router();
 const authenticateJWT = require("../src/middleware/authenticateJWT");
 const jwt = require("jsonwebtoken");
 const PersonalDetails = require("../src/models/PersonalDetails");
@@ -13,7 +13,7 @@ const User = require("../src/models/User");
 const globalMethods = require("../src/globalMethods");
 const EducationalProfessionalDetails = require("../src/models/EducationalProfessionalDetails");
 const {
-  getSearchProfiles,
+  getAdvanceSearchProfiles,
   getProfileByMaritalStatus,
 } = require("../src/services/userService");
 
@@ -25,8 +25,9 @@ const getPagingData = (data, page, limit) => {
   return { totalItems, items, totalPages, currentPage };
 };
 
-searchController.get("/", async function (request, response) {
-  const result = getSearchProfiles(request.query);
+advanceSearchController.get("/", async function (request, response) {
+  console.log("inside");
+  const result = getAdvanceSearchProfiles(request.query);
 
   result.then((data) => response.json(data));
 
@@ -37,7 +38,7 @@ searchController.get("/", async function (request, response) {
   console.log(request.query);
 });
 
-searchController.get("/getSearchBy", async function (request, response) {
+advanceSearchController.get("/getSearchBy", async function (request, response) {
   const result = getProfileByMaritalStatus(request.query);
 
   result.then((data) => response.json(data));
@@ -49,4 +50,4 @@ searchController.get("/getSearchBy", async function (request, response) {
   console.log(request.query);
 });
 
-module.exports = searchController;
+module.exports = advanceSearchController;

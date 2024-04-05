@@ -230,7 +230,7 @@ VALUES('Narayanpur', '713','7'),
 VALUES('Norh Bastar-Kanker', '714','7'),
 VALUES('Raigarh', '715','7'),
 VALUES('Raipur', '716','7'),
-VALUES('Rajnandgaon', '717','7'),
+VALUES('Rajnandgaon', '717','7'),-
 VALUES('South Bastar-Dantewada', '718','7'),
 VALUES('Surguja', '719','7');
 

@@ -11,6 +11,8 @@ const User = require("../models/User");
 const twilioApi = require("../../src/twilio-api");
 const Expectations = require("../models/Expectations");
 const RequestDetail = require("../models/RequestDetail");
+const Bookmark = require("../models/Bookmark");
+const Sequelize = require("sequelize");
 
 const getPagingData = (data, page, limit) => {
   const { count: totalItems, rows: items } = data;
@@ -101,25 +103,53 @@ exports.sendOTP = function (mobile) {
 };
 
 exports.getSearchProfiles = function (params) {
-  console.log(params);
+  console.log("++", params);
   let page = 0;
   let limit = 10;
+  let personDetail = {};
+  let maritalStatus = "";
+  let gender = "";
 
   const {
-    height = "",
     educationArea = "",
-    gender = "",
-    maritialStatus = "",
     nativeDistrict = "",
     occupationPlace = "",
     occupationType = "",
+    userId = "",
+    lookingFor = "",
   } = params;
 
-  let personDetail = {
-    height: height,
-    maritialStatus: maritialStatus,
-    gender: gender,
-  };
+  if (lookingFor) {
+    if (lookingFor === "bride") {
+      // personDetail.maritialStatus = "unmarried";
+      personDetail.gender = "female";
+    } else if (lookingFor === "groom") {
+      // personDetail["maritialStatus"] = "unmarried";
+      personDetail.gender = "Male";
+    } else if (lookingFor === "divorceeBride") {
+      personDetail.maritialStatus = "divorcee";
+      personDetail.gender = "female";
+    } else if (lookingFor === "divorceeGroom") {
+      personDetail.maritialStatus = "divorcee";
+      personDetail.gender = "Male";
+    } else if (lookingFor === "widow") {
+      personDetail.maritialStatus = "widow";
+      personDetail.gender = "female";
+    } else if (lookingFor === "widower") {
+      personDetail.maritialStatus = "widower";
+      personDetail.gender = "Male";
+    }
+  } else {
+    personDetail.gender = gender;
+  }
+
+  console.log("====", personDetail);
+
+  // let personDetail = {
+  //   height: height,
+  //   maritialStatus: maritialStatus,
+  //   gender: gender,
+  // };
 
   let educationalDetail = {
     educationArea: educationArea,
@@ -131,10 +161,16 @@ exports.getSearchProfiles = function (params) {
     nativeDistrict: nativeDistrict,
   };
 
+  let bookmarkDetail = {
+    userId: userId ? userId : "",
+  };
+
   let personDetailFilters = globalMethods.cleanObject(personDetail);
   let educationalDetailFilters = globalMethods.cleanObject(educationalDetail);
   let familyDetailFilters = globalMethods.cleanObject(familyDetail);
-  console.log(educationalDetailFilters);
+  // let bookmarkDetailFilters = globalMethods.cleanObject(bookmarkDetail);
+  console.log("+++", personDetailFilters);
+  // how to on the debugger to print the selected query
 
   return userModel
     .findAndCountAll({
@@ -142,7 +178,14 @@ exports.getSearchProfiles = function (params) {
         {
           model: PersonalDetails,
           as: "PersonalDetails",
-          attributes: ["lastName", "gender", "dob", "displayId", "height"],
+          attributes: [
+            "lastName",
+            "gender",
+            "dob",
+            "displayId",
+            "height",
+            "maritialStatus",
+          ],
           where: {
             ...personDetailFilters,
           },
@@ -177,12 +220,144 @@ exports.getSearchProfiles = function (params) {
             ...familyDetailFilters,
           },
         },
+        // {
+        //   model: Bookmark,
+        //   as: "Bookmark",
+        //   // where: {
+        //   //   ...bookmarkDetailFilters,
+        //   // },
+        //   nested: true,
+        //   attributes: ["bookmarkTo"],
+        // },
       ],
       attributes: ["uuid"],
       raw: true,
       nest: true,
+
+      where: {
+        uuid: {
+          [Sequelize.Op.ne]: userId, // Exclude bookmarks with this userId
+        },
+      },
     })
     .then((users) => {
+      console.log("----", users);
+      const cloneObj = Object.assign({}, users);
+      cloneObj.rows.map((item) => {
+        if (item.ProfileImage && item.ProfileImage.fileName != null) {
+          const imagePath = item.ProfileImage.fileName;
+          const imageBuffer = fs.readFileSync(imagePath);
+          console.log(imageBuffer);
+          // Convert the image buffer to base64.
+          const base64Image = imageBuffer.toString("base64");
+          // Set the Content-Type header to the image type.
+          // response.setHeader("Content-Type", "image/jpg");
+          item.file = base64Image;
+          return item;
+        }
+        return item;
+      });
+      const data = getPagingData(cloneObj, page, limit);
+      return data;
+    });
+};
+
+// wrtie a function to get the profile based on the profile martital status
+exports.getProfileByMaritalStatus = function (params) {
+  let page = 0;
+  let limit = 10;
+  let maritalStatus;
+  let gender;
+  const { userId, searchType } = params;
+
+  if (!searchType) {
+    throw new Error("searchType is required.");
+  }
+
+  if (searchType === "bride") {
+    maritalStatus = "unmarried";
+    gender = "female";
+  } else if (searchType === "groom") {
+    maritalStatus = "unmarried";
+    gender = "Male";
+  } else if (searchType === "divorceeBride") {
+    maritalStatus = "divorcee";
+    gender = "female";
+  } else if (searchType === "divorceeGroom") {
+    maritalStatus = "divorcee";
+    gender = "Male";
+  } else if (searchType === "widow") {
+    maritalStatus = "widow";
+    gender = "female";
+  } else if (searchType === "widower") {
+    maritalStatus = "widower";
+    gender = "Male";
+  }
+
+  let personDetail = {
+    maritialStatus: maritalStatus,
+    gender: gender,
+  };
+
+  let personDetailFilters = globalMethods.cleanObject(personDetail);
+
+  return userModel
+    .findAndCountAll({
+      include: [
+        {
+          model: PersonalDetails,
+          as: "PersonalDetails",
+          attributes: ["lastName", "gender", "dob", "displayId", "height"],
+          where: {
+            ...personDetailFilters,
+          },
+        },
+        {
+          model: EducationalProfessionalDetails,
+          as: "EducationDetails",
+          attributes: [
+            "occupationPlace",
+            "occupationDetail",
+            "occupationType",
+            "educationArea",
+            "education",
+            "income",
+            "incomeType",
+          ],
+        },
+        {
+          model: ProfileImage,
+          as: "ProfileImage",
+          attributes: ["fileName"],
+        },
+
+        {
+          model: FamilyBackground,
+          as: "FamilyBackground",
+          attributes: ["nativeDistrict"],
+        },
+        // {
+        //   model: Bookmark,
+        //   as: "Bookmark",
+        //   // where: {
+        //   //   ...bookmarkDetailFilters,
+        //   // },
+        //   nested: true,
+        //   attributes: ["bookmarkTo"],
+        // },
+      ],
+      attributes: ["uuid"],
+      raw: true,
+      nest: true,
+
+      where: {
+        uuid: {
+          [Sequelize.Op.ne]: userId, // Exclude bookmarks with this userId
+        },
+      },
+    })
+    .then((users) => {
+      console.log("----", users);
       const cloneObj = Object.assign({}, users);
       cloneObj.rows.map((item) => {
         if (item.ProfileImage && item.ProfileImage.fileName != null) {
@@ -262,7 +437,183 @@ exports.getLatestProfile = function () {
     });
 };
 
-exports.getProfile = function (profileId) {
+exports.getProfile = function (id) {
+  return userModel
+    .findOne({
+      include: [
+        {
+          model: PersonalDetails,
+          as: "PersonalDetails",
+          attributes: [
+            "lastName",
+            "gender",
+            "dob",
+            "displayId",
+            "bloodGroup",
+            "maritialStatus",
+            "diet",
+            "personality",
+            "height",
+            "weight",
+            "complexion",
+          ],
+        },
+        {
+          model: EducationalProfessionalDetails,
+          as: "EducationDetails",
+          attributes: [
+            "occupationPlace",
+            "occupationDetail",
+            "occupationType",
+            "educationArea",
+            "education",
+            "income",
+            "incomeType",
+          ],
+        },
+        {
+          model: ProfileImage,
+          as: "ProfileImage",
+          attributes: ["fileName"],
+        },
+
+        {
+          model: FamilyBackground,
+          as: "FamilyBackground",
+          attributes: [
+            "nativeDistrict",
+            "parentsResidenceAddress",
+            "parentsOccupation",
+            "relativeSurname",
+            "mamasSurname",
+            "familyWealth",
+            "nativeTaluka",
+            "brother",
+            "sister",
+            "mother",
+            "father",
+            "marriedSister",
+            "marriedBrother",
+            "unMarriedSister",
+            "unMarriedBrother",
+          ],
+        },
+        {
+          model: Expectations,
+          as: "Expectations",
+          attributes: [
+            "preferredCities",
+            "expectedCaste",
+            "maxAgeDiffernce",
+            "expectedEducation",
+            "expectedOccupation",
+            "expectedAnnualIncome",
+            "expectedHeight",
+          ],
+        },
+      ],
+      attributes: ["uuid"],
+      raw: true,
+      nest: true,
+      where: {
+        uuid: id,
+      },
+    })
+    .then((item) => {
+      console.log(item);
+      if (item.ProfileImage && item.ProfileImage.fileName != null) {
+        const imagePath = item.ProfileImage.fileName;
+        const imageBuffer = fs.readFileSync(imagePath);
+        console.log(imageBuffer);
+        // Convert the image buffer to base64.
+        const base64Image = imageBuffer.toString("base64");
+        // Set the Content-Type header to the image type.
+        // response.setHeader("Content-Type", "image/jpg");
+        item.file = base64Image;
+        return item;
+      }
+      return item;
+    });
+  // const data = getPagingData(cloneObj, page, limit);
+};
+
+exports.sendProfileDetail = async function (params) {
+  const { requestedBy, requestedFor } = params;
+
+  const count = await RequestDetail.count({
+    where: {
+      requestedBy: requestedBy,
+    },
+  }).then((data) => data);
+  console.log("+++", count);
+  if (count < 2) {
+    return userModel
+      .findOne({
+        include: [
+          {
+            model: PersonalDetails,
+            as: "PersonalDetails",
+            attributes: [
+              "firstName",
+              "lastName",
+              "middleName",
+              "gender",
+              "dob",
+              "displayId",
+            ],
+          },
+        ],
+        attributes: ["uuid"],
+        raw: true,
+        nest: true,
+        where: {
+          uuid: requestedFor,
+        },
+        attributes: ["mobile"],
+      })
+      .then((item) => {
+        console.log(item);
+
+        // return twilioApi.data
+        // return twilioApi.data
+        //   .watsupMessage(
+        //     "whatsapp:+919665988376",
+        //     "Mobile Number : " +
+        //       item.mobile +
+        //       "</br> Name : " +
+        //       item.PersonalDetails.lastName +
+        //       " " +
+        //       item.PersonalDetails.firstName +
+        //       " " +
+        //       item.PersonalDetails.middleName
+        //   )
+        //   .then((data) => {
+        //     console.log("++++", data);
+
+        RequestDetail.create({
+          requestedFor: requestedFor,
+          requestedBy: requestedBy,
+        });
+
+        return {
+          responseCode: "200",
+          responseType: "SUCCESS",
+          responseMessage:
+            "Requested details has been sent on your mobile number & Email Id.",
+        };
+        // });
+      });
+  } else {
+    return {
+      responseCode: "200",
+      responseType: "FAILED",
+      responseMessage:
+        "Your daily limit has been exceeded. Please try it tommrow.",
+    };
+  }
+};
+
+exports.getProfileByMobile = function (mobile) {
   return userModel
     .findOne({
       include: [
@@ -342,7 +693,7 @@ exports.getProfile = function (profileId) {
       raw: true,
       nest: true,
       where: {
-        uuid: profileId,
+        mobile: mobile,
       },
     })
     .then((item) => {
@@ -363,79 +714,182 @@ exports.getProfile = function (profileId) {
   // const data = getPagingData(cloneObj, page, limit);
 };
 
-exports.sendProfileDetail = async function (params) {
-  const { requestedBy, requestedFor } = params;
+exports.getAdvanceSearchProfiles = function (params) {
+  console.log("++", params);
 
-  const count = await RequestDetail.count({
-    where: {
-      requestedBy: requestedBy,
-    },
-  }).then((data) => data);
-  console.log("+++", count);
-  if (count < 2) {
-    console.log("----");
-    return userModel
-      .findOne({
-        include: [
-          {
-            model: PersonalDetails,
-            as: "PersonalDetails",
-            attributes: [
-              "firstName",
-              "lastName",
-              "middleName",
-              "gender",
-              "dob",
-              "displayId",
-            ],
-          },
-        ],
-        attributes: ["uuid"],
-        raw: true,
-        nest: true,
-        where: {
-          uuid: requestedFor,
-        },
-        attributes: ["mobile"],
-      })
-      .then((item) => {
-        console.log(item);
+  //
+  const {
+    lookingFor,
+    userId,
+    educationArea = "",
+    occupationPlace = "",
+    occupationType = "",
+  } = params;
+  let page = 0;
+  let limit = 10;
+  let gender = "";
+  let maritialStatus = "";
 
-        // return twilioApi.data
-        // return twilioApi.data
-        //   .watsupMessage(
-        //     "whatsapp:+919665988376",
-        //     "Mobile Number : " +
-        //       item.mobile +
-        //       "</br> Name : " +
-        //       item.PersonalDetails.lastName +
-        //       " " +
-        //       item.PersonalDetails.firstName +
-        //       " " +
-        //       item.PersonalDetails.middleName
-        //   )
-        //   .then((data) => {
-        //     console.log("++++", data);
-
-        RequestDetail.create({
-          requestedFor: requestedFor,
-          requestedBy: requestedBy,
-        });
-
-        return {
-          responseCode: "200",
-          responseType: "SUCCESS",
-          responseMessage:
-            "Requested details has been sent on your mobile number & Email Id.",
-        };
-        // });
-      });
-  } else {
-    return {
-      responseCode: "200",
-      responseType: "SUCCESS",
-      responseMessage:
-        "Your daily limit has been exceeded. Please try it tommrow.",
-    };
+  if (lookingFor) {
+    if (lookingFor === "bride") {
+      maritialStatus = "unmarried";
+      gender = "female";
+    } else if (lookingFor === "groom") {
+      maritialStatus = "unmarried";
+      gender = "Male";
+    } else if (lookingFor === "divorceeBride") {
+      maritialStatus = "divorcee";
+      gender = "female";
+    } else if (lookingFor === "divorceeGroom") {
+      maritialStatus = "divorcee";
+      gender = "Male";
+    } else if (lookingFor === "widow") {
+      maritialStatus = "widow";
+      gender = "female";
+    } else if (lookingFor === "widower") {
+      maritialStatus = "widower";
+      gender = "Male";
+    }
   }
+
+  let personDetail = {
+    maritialStatus: maritialStatus,
+    gender: gender,
+  };
+
+  let educationalDetail = {
+    educationArea: educationArea,
+    occupationPlace: occupationPlace,
+    occupationType: occupationType,
+  };
+
+  if (params.income && params.income !== "") {
+    // Convert income range string to numbers
+    let incomeRange = params.income.split("-");
+    let lowerIncomeValue = incomeRange[0].split(" ")[0];
+    let upperIncomeValue = incomeRange[1] ? incomeRange[1].split(" ")[0] : null;
+    let incomeMultiplier = incomeRange[1]
+      ? incomeRange[1].split(" ")[1] === "Lakh"
+        ? 100000
+        : 1
+      : 10000000;
+    let lowerIncomeNumber = lowerIncomeValue * incomeMultiplier;
+    let upperIncomeNumber = upperIncomeValue
+      ? upperIncomeValue * incomeMultiplier
+      : null;
+    if (upperIncomeNumber) {
+      educationalDetail.income = {
+        [Sequelize.Op.between]: [lowerIncomeNumber, upperIncomeNumber], // between lowerIncomeNumber and upperIncomeNumber
+      };
+    } else {
+      console.log("=====", incomeMultiplier);
+      educationalDetail.income = {
+        [Sequelize.Op.gte]: lowerIncomeNumber, // greater than or equal to lowerIncomeNumber
+      };
+    }
+  }
+
+  // let familyDetail = {
+  //   nativeDistrict: nativeDistrict,
+  // };
+
+  // let bookmarkDetail = {
+  //   userId: userId ? userId : "",
+  // };
+
+  let personDetailFilters = globalMethods.cleanObject(personDetail);
+  let educationalDetailFilters = globalMethods.cleanObject(educationalDetail);
+  // let familyDetailFilters = globalMethods.cleanObject(familyDetail);
+  // let bookmarkDetailFilters = globalMethods.cleanObject(bookmarkDetail);
+  console.log("+++", personDetailFilters);
+  // how to on the debugger to print the selected query
+
+  return userModel
+    .findAndCountAll({
+      include: [
+        {
+          model: PersonalDetails,
+          as: "PersonalDetails",
+          attributes: [
+            "lastName",
+            "gender",
+            "dob",
+            "displayId",
+            "height",
+            "maritialStatus",
+          ],
+          where: {
+            ...personDetailFilters,
+          },
+        },
+        {
+          model: EducationalProfessionalDetails,
+          as: "EducationDetails",
+          attributes: [
+            "occupationPlace",
+            "occupationDetail",
+            "occupationType",
+            "educationArea",
+            "education",
+            "income",
+            "incomeType",
+          ],
+          where: {
+            ...educationalDetailFilters,
+          },
+        },
+        {
+          model: ProfileImage,
+          as: "ProfileImage",
+          attributes: ["fileName"],
+        },
+
+        {
+          model: FamilyBackground,
+          as: "FamilyBackground",
+          attributes: ["nativeDistrict"],
+          // where: {
+          //   ...familyDetailFilters,
+          // },
+        },
+        // {
+        //   model: Bookmark,
+        //   as: "Bookmark",
+        //   // where: {
+        //   //   ...bookmarkDetailFilters,
+        //   // },
+        //   nested: true,
+        //   attributes: ["bookmarkTo"],
+        // },
+      ],
+      attributes: ["uuid"],
+      raw: true,
+      nest: true,
+
+      // where: {
+      //   uuid: {
+      //     [Sequelize.Op.ne]: userId, // Exclude bookmarks with this userId
+      //   },
+      // },
+    })
+    .then((users) => {
+      console.log("----", users);
+      const cloneObj = Object.assign({}, users);
+      cloneObj.rows.map((item) => {
+        if (item.ProfileImage && item.ProfileImage.fileName != null) {
+          const imagePath = item.ProfileImage.fileName;
+          const imageBuffer = fs.readFileSync(imagePath);
+          console.log(imageBuffer);
+          // Convert the image buffer to base64.
+          const base64Image = imageBuffer.toString("base64");
+          // Set the Content-Type header to the image type.
+          // response.setHeader("Content-Type", "image/jpg");
+          item.file = base64Image;
+          return item;
+        }
+        return item;
+      });
+      const data = getPagingData(cloneObj, page, limit);
+      return data;
+    });
 };

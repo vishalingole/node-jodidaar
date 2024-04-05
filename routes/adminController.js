@@ -1,28 +1,52 @@
 const express = require("express");
-const userController = express.Router();
+const adminController = express.Router();
 // const authenticateJWT = require("../src/middleware/authenticateJWT");
 const jwt = require("jsonwebtoken");
 const accessTokenSecret = process.env.JWT_KEY;
 const refreshTokenSecret = process.env.JWT_KEY;
 const refreshTokens = [];
 const userModel = require("../src/models/User");
-const userDetailModel = require("../src/models/UserDetail");
+const operatorInfoModel = require("../src/models/OperatorInfo");
+const {
+  getSearchProfiles,
+  createOperatorUser,
+  getOperator,
+} = require("../src/services/adminService");
 
-var userService = require("../src/services/userService");
 const Sequelize = require("sequelize");
-const OtpModel = require("../src/models/Otp");
 const User = require("../src/models/User");
-const PersonalDetails = require("../src/models/PersonalDetails");
-const Address = require("../src/models/Address");
-const EducationalProfessionalDetails = require("../src/models/EducationalProfessionalDetails");
-const Expectations = require("../src/models/Expectations");
-const FamilyBackground = require("../src/models/FamilyBackground");
-const HoroscopeDetails = require("../src/models/HoroscopeDetails");
 const fs = require("fs");
 
-userController.get("/", async function (request, response) {});
+adminController.get("/", async function (request, response) {});
 
-userController.post("/login", async function (request, response) {
+adminController.get("/get-report", async function (request, response) {});
+
+adminController.get("/get-operator", async function (request, response) {
+  const result = getOperator(request.query);
+  result.then((data) => response.json(data));
+});
+
+adminController.get("/get-profile", async function (request, response) {
+  const result = getSearchProfiles(request.query);
+  result.then((data) => response.json(data));
+});
+
+adminController.post("/new-profile", async function (request, response) {
+  // const
+});
+
+adminController.post("/new-operator", async function (request, response) {
+  const result = createOperatorUser(request.body);
+  result.then((data) =>
+    response.json({
+      statusCode: 200,
+      status: "success",
+      message: "Operator registered successfully.",
+    })
+  );
+});
+
+adminController.post("/login", async function (request, response) {
   console.log(request.files);
   console.log(request.body);
   const mobile = request.body.mobile;
@@ -59,42 +83,12 @@ userController.post("/login", async function (request, response) {
     });
 });
 
-userController.post("/verify-otp", async function (request, response) {
+adminController.post("/verify-otp", async function (request, response) {
   const mobile = request.body.mobile;
   const otp = request.body.otp;
   const id = request.body.uuid;
   const userInfo = userService.verifyOTP(mobile, otp).then((data) => {
     if (data != null) {
-      console.log("+++", data);
-      let userDetails = userService.getProfileByMobile(mobile);
-      userDetails.then((userData) => {
-        const accessToken = jwt.sign({ username: mobile }, accessTokenSecret, {
-          expiresIn: "5h",
-        });
-        const refreshToken = jwt.sign(
-          { username: mobile },
-          refreshTokenSecret,
-          {
-            expiresIn: "5h",
-          }
-        );
-        console.log("+--++", userData);
-        console.log(userData.personalDetails);
-        console.log(userData.uuid);
-        refreshTokens.push(refreshToken);
-
-        response.json({
-          statusCode: 200,
-          status: "success",
-          message: "Logged In successfully.",
-          accessToken,
-          refreshToken,
-          userInfo: userData.PersonalDetails,
-          file: userData.file,
-        });
-      });
-
-      return;
       console.log("User logged In.");
       const accessToken = jwt.sign({ username: mobile }, accessTokenSecret, {
         expiresIn: "5h",
@@ -111,7 +105,7 @@ userController.post("/verify-otp", async function (request, response) {
         message: "Logged In successfully.",
         accessToken,
         refreshToken,
-        user: userDetails.personalDetails,
+        id: data.uuid,
       });
     } else {
       response.json({
@@ -123,12 +117,9 @@ userController.post("/verify-otp", async function (request, response) {
   });
 });
 
-userController.get("/profile-detail", async function (request, response) {
+adminController.get("/profile-detail", async function (request, response) {
   const profileId = request.query.profileId;
-  if (profileId)
-    return userService
-      .getProfile(profileId)
-      .then((data) => response.json(data));
+  return userService.getProfile(profileId).then((data) => response.json(data));
 
   console.log(profileId);
   User.findByPk(profileId, {
@@ -211,7 +202,7 @@ userController.get("/profile-detail", async function (request, response) {
     });
 });
 
-userController.post("/stepOne", async function (request, response) {
+adminController.post("/stepOne", async function (request, response) {
   console.log("++", request.body);
   const mobile = request.body.mobile;
 
@@ -241,7 +232,7 @@ userController.post("/stepOne", async function (request, response) {
     });
 });
 
-userController.get("/get-profile-image", async function (request, response) {
+adminController.get("/get-profile-image", async function (request, response) {
   console.log(request.query.id);
 
   const imagePath = "public/test.jpg";
@@ -257,7 +248,7 @@ userController.get("/get-profile-image", async function (request, response) {
   response.send(base64Image);
 });
 
-// userController.post(
+// adminController.post(
 //   "/create",
 //   authenticateJWT,
 //   async function (request, response) {
@@ -305,7 +296,7 @@ userController.get("/get-profile-image", async function (request, response) {
 //   }
 // );
 
-// userController.put(
+// adminController.put(
 //   "/update/:id",
 //   authenticateJWT,
 //   async function (request, response) {
@@ -313,15 +304,15 @@ userController.get("/get-profile-image", async function (request, response) {
 //   }
 // );
 
-// userController.get("/:id", authenticateJWT, async function (request, response) {
+// adminController.get("/:id", authenticateJWT, async function (request, response) {
 //   response.send("get user by id");
 // });
 
-userController.get("/latest-profile", async function (request, response) {
+adminController.get("/latest-profile", async function (request, response) {
   userService.getLatestProfile().then((data) => response.json(data));
 });
 
-userController.get("/get-profile-detail", async function (request, response) {
+adminController.get("/get-profile-detail", async function (request, response) {
   console.log(request.query);
 
   // userService
@@ -332,4 +323,4 @@ userController.get("/get-profile-detail", async function (request, response) {
     .then((data) => response.json(data));
 });
 
-module.exports = userController;
+module.exports = adminController;
